@@ -1,10 +1,9 @@
-package com.rrkim.ipcamserver.module.auth;
+package com.rrkim.ipcamserver.core.auth;
 
-import com.rrkim.ipcamserver.module.auth.dto.RSAKeyPair;
+import com.rrkim.ipcamserver.core.auth.dto.RSAKeyPair;
 
 import java.security.*;
 import java.util.Base64;
-import java.util.List;
 
 public class RSAKeyPairGenerator {
 
