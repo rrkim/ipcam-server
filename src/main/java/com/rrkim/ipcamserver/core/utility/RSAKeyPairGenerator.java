@@ -1,4 +1,4 @@
-package com.rrkim.ipcamserver.core.auth;
+package com.rrkim.ipcamserver.core.utility;
 
 import com.rrkim.ipcamserver.core.auth.dto.RSAKeyPair;
 
