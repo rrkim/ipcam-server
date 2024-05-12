@@ -25,7 +25,7 @@ public class IdentificationController {
 
         DataInputStream bos = null;
         try {
-            bos = fileService.getFileOutputStream("keypair.tci");
+            bos = fileService.getDataInputStream("keypair.tci");
         }
         catch (Exception e) {
             e.printStackTrace();

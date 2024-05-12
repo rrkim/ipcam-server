@@ -3,8 +3,6 @@ package com.rrkim.ipcamserver.core.file.service;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Service
@@ -37,7 +35,7 @@ public class FileService {
         return text;
     }
 
-    public DataInputStream getFileOutputStream(String fileName) throws IOException {
+    public DataInputStream getDataInputStream(String fileName) throws IOException {
         // read file and return InputStream
 
         File file = Paths.get(currentDirectory, fileName).toFile();
