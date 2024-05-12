@@ -20,12 +20,13 @@ public class IdentificationController {
     public void getPair(HttpServletResponse response) throws IOException {
         // make sure camera identity is present
         // create camera identity and generate key pair(.tci)
+
         // TODO: get key pair for multiple clients
         identificationService.createCameraIdentity();
 
         DataInputStream bos = null;
         try {
-            bos = fileService.getDataInputStream("keypair.tci");
+            bos = fileService.getDataInputStream("keys/keypair.tci");
         }
         catch (Exception e) {
             e.printStackTrace();

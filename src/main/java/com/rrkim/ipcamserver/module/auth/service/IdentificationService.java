@@ -36,9 +36,9 @@ public class IdentificationService {
             Base64.Encoder encoder = Base64.getEncoder();
             String encodedTCI = encoder.encodeToString(jsonString.getBytes(StandardCharsets.UTF_8));
 
-            fileService.saveFileByDataStream("public.key", publicKey);
-            fileService.saveFileByDataStream("private.key", privateKey);
-            fileService.saveFileByDataStream("keypair.tci", encodedTCI);
+            fileService.saveFileByDataStream("keys/public.key", publicKey);
+            fileService.saveFileByDataStream("keys/private.key", privateKey);
+            fileService.saveFileByDataStream("keys/keypair.tci", encodedTCI);
         } catch (Exception e) {
             log.error("TCI 파일 생성 중 오류가 발생했습니다.");
             e.printStackTrace();
