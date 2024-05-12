@@ -36,4 +36,23 @@ public class FileService {
 
         return text;
     }
+
+    public DataInputStream getFileOutputStream(String fileName) throws IOException {
+        // read file and return InputStream
+
+        File file = Paths.get(currentDirectory, fileName).toFile();
+        if(!file.exists()) { return null; }
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            DataInputStream dis = new DataInputStream(bis);
+
+            return dis;
+        }
+        catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
