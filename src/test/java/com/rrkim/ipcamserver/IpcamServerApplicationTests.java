@@ -138,4 +138,31 @@ public class IpcamServerApplicationTests {
         }
 
     }
+
+    @Test
+    void PrivateKeyDecryptTest() throws Exception {
+        // RSA encrypted shared key string from http://localhost:8080/sharedKey
+        final String SHARED_KEY = "hWx4WgQ++57oY+Ji+d48aZQTzqyD0f2Fg7Cml94WC374SsGl6b23iuZWvkcRq9hHLB2s6j7WEeVDf3uwhMab+7WsGiwmRsThrcBYmNzIKMU8KfJx31X6HyPRXLl95b5FiycrUsNLOBnJFj79tDKwyMSxjOAH0fSnInxpzyMnXw87O1pw96ti03jtZKkccCLGnW90N4sBOypWCtzVFyDMszS507G5LDj6GMt8p3hUgZzEcxJHjYt8XPaFs4zMWFuvHtHcedDaCUx6VPVeg1QUgLVnBwMIxg/7KvVvbfW+KDhB81OSxOzAVQd9RWG3P7JwuFChqeHltNIPM3nM57X3Dw==";
+
+        // 1. proceed RSA decrypt with private-key
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        Cipher cipherRSA = Cipher.getInstance("RSA");
+
+        String privateKeyString = fileService.readFileByDataStream("keys/private.key");
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyString);
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        Key privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+        cipherRSA.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] sharedKey = cipherRSA.doFinal(Base64.getDecoder().decode(SHARED_KEY.getBytes()));
+
+        // 2. verify decrypted shared-key is equal shared-key from file
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+
+        assert sharedKey.length == sharedKeyFromFile.length;
+        for(int i = 0; i < sharedKeyFromFile.length; i++) {
+            assert sharedKeyFromFile[i] == sharedKey[i];
+        }
+
+    }
 }
