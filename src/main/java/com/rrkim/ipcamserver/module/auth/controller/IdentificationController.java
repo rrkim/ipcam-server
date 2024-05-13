@@ -9,6 +9,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Base64;
 
 @Controller
 @RequiredArgsConstructor
@@ -37,5 +38,14 @@ public class IdentificationController {
             return;
         }
         StreamUtils.copy(bos, response.getOutputStream());
+    }
+
+    @GetMapping("sharedkey")
+    public void getSharedKey(HttpServletResponse response) throws IOException {
+        byte[] sharedKey = identificationService.getEncryptedSharedKey();
+
+        response.setContentType("text/plain");
+//        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(Base64.getEncoder().encodeToString(sharedKey));
     }
 }
