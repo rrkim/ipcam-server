@@ -16,7 +16,7 @@ public class IdentificationController {
     private final IdentificationService identificationService;
     private final FileService fileService;
 
-    @GetMapping("getpair")
+    @GetMapping("pair")
     public void getPair(HttpServletResponse response) throws IOException {
         // make sure camera identity is present
         // create camera identity and generate key pair(.tci)
