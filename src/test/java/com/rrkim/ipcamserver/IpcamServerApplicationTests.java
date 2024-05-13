@@ -1,6 +1,5 @@
 package com.rrkim.ipcamserver;
 
-import com.rrkim.ipcamserver.core.device.DeviceIdProvider;
 import com.rrkim.ipcamserver.core.file.service.FileService;
 import com.rrkim.ipcamserver.module.auth.service.IdentificationService;
 import org.junit.jupiter.api.Test;
@@ -8,14 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -27,22 +22,29 @@ public class IpcamServerApplicationTests {
     FileService fileService;
 
     @Test
-    void contextLoads() throws Exception {
-        byte[] sharedKey = identificationService.getEncryptedSharedKey();
-        String encodedSharedKey = Base64.getEncoder().encodeToString(sharedKey);
+    void AESTest() throws Exception {
+        // target text
+        String targetString = "hello world";
 
-        String publicKeyString = fileService.readFileByDataStream("keys/private.key");
-        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyString);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(publicKeyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        Key publicKey = keyFactory.generatePrivate(keySpec);
+        Cipher cipher = Cipher.getInstance("AES");
 
-        Cipher ciper = Cipher.getInstance("RSA");
-        ciper.init(Cipher.DECRYPT_MODE, publicKey);
-        byte[] decrypted = ciper.doFinal(Base64.getDecoder().decode(encodedSharedKey));
+        // encrypt target text with shared key
+        byte[] key = identificationService.createSharedKey().getEncoded();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-        System.out.println(Base64.getEncoder().encodeToString(decrypted));
-        System.out.println(Base64.getEncoder().encodeToString(sharedKey));
+        byte[] encrypted = cipher.doFinal(targetString.getBytes());
+
+        // decrypt target text with same key
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+        byte[] decrypted = cipher.doFinal(encrypted);
+
+        // test result
+        assert decrypted.length == targetString.getBytes().length;
+
+        for(int i = 0; i < decrypted.length; i++) {
+            assert decrypted[i] == targetString.getBytes()[i];
+        }
     }
 
     @Test
@@ -77,6 +79,9 @@ public class IpcamServerApplicationTests {
         byte[] decrypted = cipher.doFinal(encrypted);
 
         // verify original string and decrypted string are same
+
+        assert decrypted.length == targetString.getBytes().length;
+
         for(int i = 0; i < decrypted.length; i++) {
             assert decrypted[i] == targetString.getBytes()[i];
         }
