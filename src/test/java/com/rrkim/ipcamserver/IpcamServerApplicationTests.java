@@ -30,6 +30,16 @@ public class IpcamServerApplicationTests {
 
         // encrypt target text with shared key
         byte[] key = identificationService.createSharedKey().getEncoded();
+
+        // ensure key is equal to shared key file
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+
+        assert key.length == sharedKeyFromFile.length;
+        for(int i = 0; i < sharedKeyFromFile.length; i++) {
+            assert sharedKeyFromFile[i] == key[i];
+        }
+
+
         SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
@@ -119,6 +129,15 @@ public class IpcamServerApplicationTests {
         cipherRSA.init(Cipher.DECRYPT_MODE, privateKey);
 
         byte[] sharedKey = cipherRSA.doFinal(encryptedSharedKey);
+
+        // verify decrypted key equals shared key file
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+
+        assert sharedKey.length == sharedKeyFromFile.length;
+
+        for(int i = 0; i < sharedKey.length; i++) {
+            assert sharedKey[i] == sharedKeyFromFile[i];
+        }
 
         // 2. encrypt target string with AES-key
         SecretKeySpec secretKeySpec = new SecretKeySpec(sharedKey, "AES");
