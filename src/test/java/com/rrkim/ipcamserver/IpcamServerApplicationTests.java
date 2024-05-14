@@ -1,6 +1,9 @@
 package com.rrkim.ipcamserver;
 
 import com.rrkim.ipcamserver.core.file.service.FileService;
+import com.rrkim.ipcamserver.core.utility.FileUtility;
+import com.rrkim.ipcamserver.core.utility.StringUtility;
+import com.rrkim.ipcamserver.module.auth.dto.SecureKey;
 import com.rrkim.ipcamserver.module.auth.service.IdentificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +21,6 @@ import java.util.Base64;
 public class IpcamServerApplicationTests {
     @Autowired
     IdentificationService identificationService;
-    @Autowired
-    FileService fileService;
 
     @Test
     void AESTest() throws Exception {
@@ -29,10 +30,11 @@ public class IpcamServerApplicationTests {
         Cipher cipher = Cipher.getInstance("AES");
 
         // encrypt target text with shared key
-        byte[] key = identificationService.createSharedKey().getEncoded();
+        identificationService.createSymmetricKey();
+        byte[] key = identificationService.getSymmetricKey().getBytes();
 
         // ensure key is equal to shared key file
-        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(FileUtility.readFileByDataStream("keys/shared.key"));
 
         assert key.length == sharedKeyFromFile.length;
         for(int i = 0; i < sharedKeyFromFile.length; i++) {
@@ -70,7 +72,7 @@ public class IpcamServerApplicationTests {
         Cipher cipher = Cipher.getInstance("RSA");
 
         // encrypt target text with public key
-        String publicKeyString = fileService.readFileByDataStream("keys/public.key");
+        String publicKeyString = FileUtility.readFileByDataStream("keys/public.key");
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyString);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
         Key publicKey = keyFactory.generatePublic(keySpec);
@@ -79,7 +81,7 @@ public class IpcamServerApplicationTests {
         byte[] encrypted = cipher.doFinal(targetString.getBytes());
 
         // decrypt encrypted sequence with private key
-        String privateKeyString = fileService.readFileByDataStream("keys/private.key");
+        String privateKeyString = FileUtility.readFileByDataStream("keys/private.key");
         byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyString);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         Key privateKey = keyFactory.generatePrivate(privateKeySpec);
@@ -118,10 +120,12 @@ public class IpcamServerApplicationTests {
         Cipher cipherAES = Cipher.getInstance("AES");
 
         // get RSA-encrypted AES-key
-        byte[] encryptedSharedKey = identificationService.getEncryptedSharedKey();
+        SecureKey secureKey = identificationService.getSecretKey();
+        String secureKeyString = secureKey.getSecureKey();
+        byte[] encryptedSharedKey = StringUtility.decodeBase64Bytes(secureKeyString);
 
         // 1. decrypt AES-key with secret key
-        String privateKeyString = fileService.readFileByDataStream("keys/private.key");
+        String privateKeyString = FileUtility.readFileByDataStream("keys/private.key");
         byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyString);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         Key privateKey = keyFactory.generatePrivate(privateKeySpec);
@@ -131,7 +135,7 @@ public class IpcamServerApplicationTests {
         byte[] sharedKey = cipherRSA.doFinal(encryptedSharedKey);
 
         // verify decrypted key equals shared key file
-        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(FileUtility.readFileByDataStream("keys/shared.key"));
 
         assert sharedKey.length == sharedKeyFromFile.length;
 
@@ -167,7 +171,7 @@ public class IpcamServerApplicationTests {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         Cipher cipherRSA = Cipher.getInstance("RSA");
 
-        String privateKeyString = fileService.readFileByDataStream("keys/private.key");
+        String privateKeyString = FileUtility.readFileByDataStream("keys/private.key");
         byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyString);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         Key privateKey = keyFactory.generatePrivate(privateKeySpec);
@@ -176,7 +180,7 @@ public class IpcamServerApplicationTests {
         byte[] sharedKey = cipherRSA.doFinal(Base64.getDecoder().decode(SHARED_KEY.getBytes()));
 
         // 2. verify decrypted shared-key is equal shared-key from file
-        byte[] sharedKeyFromFile = Base64.getDecoder().decode(fileService.readFileByDataStream("keys/shared.key"));
+        byte[] sharedKeyFromFile = Base64.getDecoder().decode(FileUtility.readFileByDataStream("keys/shared.key"));
 
         assert sharedKey.length == sharedKeyFromFile.length;
         for(int i = 0; i < sharedKeyFromFile.length; i++) {

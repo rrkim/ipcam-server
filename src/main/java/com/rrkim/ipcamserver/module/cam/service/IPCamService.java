@@ -6,6 +6,7 @@ import com.rrkim.ipcamserver.core.device.service.DeviceManagementService;
 import com.rrkim.ipcamserver.core.utility.AesUtility;
 import com.rrkim.ipcamserver.core.utility.RsaUtility;
 import com.rrkim.ipcamserver.core.utility.ShaUtility;
+import com.rrkim.ipcamserver.module.auth.service.IdentificationService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.AsyncContext;
@@ -36,14 +37,15 @@ public class IPCamService {
     private OpenCVFrameGrabber grabber;
     private int cameraDevice = 0;
     private final DeviceConfigService deviceConfigService;
-    private final DeviceManagementService deviceManagementService;
+    private final IdentificationService identificationService;
     private String deviceInitialized = null;
 
     @PostConstruct
-    private void init() throws FrameGrabber.Exception {
+    private void init() throws FrameGrabber.Exception, NoSuchAlgorithmException {
         deviceInitialized = deviceConfigService.getConfigValue(DeviceConfiguration.INITIALIZED);
         if(deviceInitialized == null || deviceInitialized.isEmpty()) { return; }
 
+        identificationService.createSymmetricKey();
         grabber = new OpenCVFrameGrabber(cameraDevice);
         grabber.start();
     }
@@ -56,9 +58,8 @@ public class IPCamService {
 
     public void streamVideo(HttpServletRequest request, HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
-        String privateKeyText = deviceManagementService.getDeviceId();
-        String privateKey = ShaUtility.hash(privateKeyText, "").substring(0, 32);
-        System.out.println("privateKey = " + privateKey);
+        String symmetricKey = identificationService.getSymmetricKey();
+        System.out.println("stream symmetricKey = " + symmetricKey);
 
         try {
             while (true) {
@@ -70,7 +71,7 @@ public class IPCamService {
                 if(byteArrayOutputStream.size() == 0) { continue; }
                 byte[] bytes = byteArrayOutputStream.toByteArray();
 
-                String encryptedBytes = AesUtility.encodeAesCbc(bytes, privateKey);
+                String encryptedBytes = AesUtility.encodeAesCbc(bytes, symmetricKey);
 
                 bufferedOutputStream.write(encryptedBytes.getBytes());
                 bufferedOutputStream.write("\0".getBytes());

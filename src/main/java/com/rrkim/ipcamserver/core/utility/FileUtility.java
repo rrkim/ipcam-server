@@ -1,16 +1,12 @@
-package com.rrkim.ipcamserver.core.file.service;
-
-import org.springframework.stereotype.Service;
+package com.rrkim.ipcamserver.core.utility;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.Base64;
 
-@Service
-public class FileService {
-    private String currentDirectory = System.getProperty("user.dir");
+public class FileUtility {
+    private static String currentDirectory = System.getProperty("user.dir");
 
-    public void saveFileByDataStream(String fileName, String text) throws IOException {
+    public static void saveFileByDataStream(String fileName, String text) throws IOException {
         File file = Paths.get(currentDirectory, fileName).toFile();
         if (!file.exists()) {
             file.createNewFile();
@@ -22,7 +18,7 @@ public class FileService {
         }
     }
 
-    public String readFileByDataStream(String fileName) throws IOException {
+    public static String readFileByDataStream(String fileName) throws IOException {
         File file = Paths.get(currentDirectory, fileName).toFile();
         if(!file.exists()) { return null; }
 
@@ -37,7 +33,7 @@ public class FileService {
         return text.toString();
     }
 
-    public DataInputStream getDataInputStream(String fileName) throws IOException {
+    public static DataInputStream getDataInputStream(String fileName) throws IOException {
         // read file and return InputStream
 
         File file = Paths.get(currentDirectory, fileName).toFile();

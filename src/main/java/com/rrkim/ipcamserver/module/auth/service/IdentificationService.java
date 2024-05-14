@@ -3,25 +3,17 @@ package com.rrkim.ipcamserver.module.auth.service;
 import com.rrkim.ipcamserver.core.configuration.constant.DeviceConfiguration;
 import com.rrkim.ipcamserver.core.configuration.service.DeviceConfigService;
 import com.rrkim.ipcamserver.core.device.service.DeviceManagementService;
-import com.rrkim.ipcamserver.core.utility.RsaUtility;
-import com.rrkim.ipcamserver.core.utility.StringUtility;
+import com.rrkim.ipcamserver.core.utility.*;
 import com.rrkim.ipcamserver.module.auth.dto.CameraIdentity;
+import com.rrkim.ipcamserver.module.auth.dto.SecureKey;
 import com.rrkim.ipcamserver.module.auth.dto.RSAKeyPair;
-import com.rrkim.ipcamserver.core.file.service.FileService;
-import com.rrkim.ipcamserver.core.utility.AESKeyGenerator;
-import com.rrkim.ipcamserver.core.utility.JsonUtility;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +22,9 @@ public class IdentificationService {
 
     private final DeviceManagementService deviceManagementService;
     private final DeviceConfigService deviceConfigService;
-    private final FileService fileService;
+
+    @Getter
+    private String symmetricKey;
 
     public void createCameraIdentity() {
         // RSA
@@ -44,15 +38,11 @@ public class IdentificationService {
             String jsonString = JsonUtility.convertJson(cameraIdentity);
 
             // encode JSON string by base64
-            String encodedTci = StringUtility.encodeBase64(jsonString);
+            String cameraIdentityContent = StringUtility.encodeBase64(jsonString);
 
-            fileService.saveFileByDataStream("keys/public.key", publicKey);
-            fileService.saveFileByDataStream("keys/private.key", privateKey);
-            fileService.saveFileByDataStream("keys/keypair.tci", encodedTci);
-
-            //fileService.saveFileByDataStream(String.format("%s.tci", deviceId), cameraIdentityContent);
-            //deviceConfigService.setConfigValue(DeviceConfiguration.PUBLIC_KEY, publicKey);
-            //deviceConfigService.setConfigValue(DeviceConfiguration.INITIALIZED, String.valueOf(LocalDateTime.now()));
+            FileUtility.saveFileByDataStream(String.format("keys/%s.tci", deviceId), cameraIdentityContent);
+            deviceConfigService.setConfigValue(DeviceConfiguration.PUBLIC_KEY, publicKey);
+            deviceConfigService.setConfigValue(DeviceConfiguration.INITIALIZED, String.valueOf(LocalDateTime.now()));
         } catch (Exception e) {
             log.error("TCI 파일 생성 중 오류가 발생했습니다.");
             e.printStackTrace();
@@ -60,45 +50,26 @@ public class IdentificationService {
     }
 
 
-    public byte[] getEncryptedSharedKey() {
+    public SecureKey getSecureKey() {
         // get AES key, encrypt by public key and return
         try {
-            String publicKeyString = fileService.readFileByDataStream("keys/public.key");
-            System.out.println(publicKeyString);
-            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyString);
+            String publicKeyString = deviceConfigService.getConfigValue(DeviceConfiguration.PUBLIC_KEY);
+            System.out.println("= symmetricKey : " + symmetricKey);
 
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-            Key publicKey = keyFactory.generatePublic(keySpec);
-
-
-            SecretKey key = this.createSharedKey();
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-
-            if (key != null) {
-                return cipher.doFinal(key.getEncoded());
-            }
+            String secureKeyString = RsaUtility.encryptData(symmetricKey, publicKeyString);
+            return new SecureKey(secureKeyString, LocalDateTime.now());
         }
         catch (Exception e) {
-            log.error("대칭 키 생성 중 오류가 발생했습니다.");
+            log.error("비밀키 생성 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
-        return null;
-    }
-
-
-    public SecretKey createSharedKey() throws Exception {
-        // create new AES-256 key
-        SecretKey key = AESKeyGenerator.getAESKey();
-
-        if (key != null) {
-            String keyString = Base64.getEncoder().encodeToString(key.getEncoded());
-            fileService.saveFileByDataStream("keys/shared.key", keyString);
-            return key;
-        }
 
         return null;
     }
+
+
+    public void createSymmetricKey() throws NoSuchAlgorithmException {
+        this.symmetricKey = AesUtility.getRandomAesKey();
+    }
+
 }
