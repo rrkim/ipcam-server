@@ -23,17 +23,4 @@ public class FileService {
         }
     }
 
-    public String readFileByDataStream(String fileName) throws IOException {
-        File file = Paths.get(currentDirectory, fileName).toFile();
-        if(!file.exists()) { return null; }
-
-        String text;
-        try(FileInputStream fis = new FileInputStream(file);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            DataInputStream dis = new DataInputStream(bis)) {
-            text = dis.readUTF();
-        }
-
-        return text;
-    }
 }
