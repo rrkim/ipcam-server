@@ -1,6 +1,6 @@
 package com.rrkim.ipcamserver.core.utility;
 
-import com.rrkim.ipcamserver.core.auth.dto.RSAKeyPair;
+import com.rrkim.ipcamserver.module.auth.dto.RSAKeyPair;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -15,7 +15,7 @@ public class RsaUtility {
 
     public static RSAKeyPair createKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(10240);
+        keyPairGenerator.initialize(2048);
 
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         String publicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
