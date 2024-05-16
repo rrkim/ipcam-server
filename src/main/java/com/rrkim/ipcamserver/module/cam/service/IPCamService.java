@@ -45,7 +45,6 @@ public class IPCamService {
         deviceInitialized = deviceConfigService.getConfigValue(DeviceConfiguration.INITIALIZED);
         if(deviceInitialized == null || deviceInitialized.isEmpty()) { return; }
 
-        identificationService.createSymmetricKey();
         grabber = new OpenCVFrameGrabber(cameraDevice);
         grabber.start();
     }
@@ -56,13 +55,14 @@ public class IPCamService {
         grabber.stop();
     }
 
-    public void streamVideo(HttpServletRequest request, HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
+    public void streamVideo(HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
-        String symmetricKey = identificationService.getSymmetricKey();
-        System.out.println("stream symmetricKey = " + symmetricKey);
 
         try {
             while (true) {
+                String symmetricKey = identificationService.getSymmetricKey();
+                if(symmetricKey == null || symmetricKey.isEmpty()) { break; }
+
                 Frame frame = grabber.grab();
                 BufferedImage bufferedImage = convertToBufferedImage(frame);
 

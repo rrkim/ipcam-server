@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,7 +43,8 @@ public class IdentificationController {
     }
 
     @GetMapping("/auth/secure-key")
-    public @ResponseBody SecureKey getSecureKey() throws IOException {
+    public @ResponseBody SecureKey getSecureKey() throws NoSuchAlgorithmException {
+        identificationService.createSymmetricKey();
         return identificationService.getSecureKey();
     }
 }

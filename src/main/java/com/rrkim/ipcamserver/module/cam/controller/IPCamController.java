@@ -19,7 +19,7 @@ public class IPCamController {
     private final IPCamService ipCamService;
 
     @GetMapping("/stream")
-    public void stream(HttpServletRequest request, HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
-        ipCamService.streamVideo(request, response);
+    public void stream(HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
+        ipCamService.streamVideo(response);
     }
 }
