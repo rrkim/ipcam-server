@@ -35,7 +35,7 @@ import java.util.Map;
 public class IPCamService {
 
     private OpenCVFrameGrabber grabber;
-    private int cameraDevice = 0;
+    private final int cameraDevice = 0;
     private final DeviceConfigService deviceConfigService;
     private final IdentificationService identificationService;
     private String deviceInitialized = null;
