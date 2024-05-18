@@ -1,4 +1,4 @@
-package com.rrkim.ipcamserver.core.auth.dto;
+package com.rrkim.ipcamserver.module.auth.dto;
 
 import lombok.*;
 

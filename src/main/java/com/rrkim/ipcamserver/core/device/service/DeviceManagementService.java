@@ -1,33 +1,25 @@
-package com.rrkim.ipcamserver.core.device;
+package com.rrkim.ipcamserver.core.device.service;
 
-import com.rrkim.ipcamserver.core.file.constant.FileName;
-import com.rrkim.ipcamserver.core.file.service.FileService;
+import com.rrkim.ipcamserver.core.configuration.constant.DeviceConfiguration;
+import com.rrkim.ipcamserver.core.configuration.service.DeviceConfigService;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class DeviceIdProvider {
+public class DeviceManagementService {
 
-    private final FileService fileService;
+    private final DeviceConfigService deviceConfigService;
     private String deviceId;
 
     @PostConstruct
-    private void init() throws IOException {
+    private void init() {
         String deviceId = getDeviceId();
         log.info("Camera Device Id : " + deviceId);
     }
@@ -43,7 +35,7 @@ public class DeviceIdProvider {
     }
 
     private String readDeviceId() throws IOException {
-        String deviceId = fileService.readFileByDataStream(FileName.DEVICE_INFO);
+        String deviceId = deviceConfigService.getConfigValue(DeviceConfiguration.DEVICE_ID);
 
         if(deviceId == null) {
             deviceId = createDeviceId();
@@ -54,7 +46,7 @@ public class DeviceIdProvider {
 
     private String createDeviceId() throws IOException {
         String deviceId = UUID.randomUUID().toString();
-        fileService.saveFileByDataStream(FileName.DEVICE_INFO, deviceId);
+        deviceConfigService.setConfigValue(DeviceConfiguration.DEVICE_ID, deviceId);
         return deviceId;
     }
 }
