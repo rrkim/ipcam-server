@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class IPCamController {
     private final IPCamService ipCamService;
 
     @GetMapping("/stream")
-    public void stream(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ipCamService.streamVideo(request, response);
+    public void stream(HttpServletResponse response) throws IOException, NoSuchAlgorithmException {
+        ipCamService.streamVideo(response);
     }
 }
