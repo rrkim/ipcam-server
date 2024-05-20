@@ -1,5 +1,6 @@
 package com.rrkim.ipcamserver.module.auth.controller;
 
+import com.rrkim.ipcamserver.core.device.service.DeviceManagementService;
 import com.rrkim.ipcamserver.core.utility.FileUtility;
 import com.rrkim.ipcamserver.module.auth.dto.SecureKey;
 import com.rrkim.ipcamserver.module.auth.service.IdentificationService;
@@ -18,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 @RequiredArgsConstructor
 public class IdentificationController {
     private final IdentificationService identificationService;
+    private final DeviceManagementService deviceManagementService;
 
     @GetMapping("setup")
     public void getPair(HttpServletResponse response) throws IOException {
@@ -27,9 +29,12 @@ public class IdentificationController {
         // TODO: get key pair for multiple clients
         identificationService.createCameraIdentity();
 
+        String deviceId = deviceManagementService.getDeviceId();
+
+
         DataInputStream bos = null;
         try {
-            bos = FileUtility.getDataInputStream("keys/keypair.tci");
+            bos = FileUtility.getDataInputStream("keys/" + deviceId + ".tci");
         }
         catch (Exception e) {
             e.printStackTrace();
