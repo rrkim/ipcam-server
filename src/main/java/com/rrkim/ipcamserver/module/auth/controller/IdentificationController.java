@@ -8,8 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -47,8 +46,14 @@ public class IdentificationController {
         StreamUtils.copy(bos, response.getOutputStream());
     }
 
-    @GetMapping("/auth/secure-key")
-    public @ResponseBody SecureKey getSecureKey() throws NoSuchAlgorithmException {
+    @PostMapping("/auth/secure-key")
+    public @ResponseBody SecureKey getSecureKey(@RequestBody String uuid) throws NoSuchAlgorithmException {
+        String deviceId = deviceManagementService.getDeviceId();
+
+        if(!deviceId.equals(uuid.strip())) {
+            return null;
+        }
+
         identificationService.createSymmetricKey();
         return identificationService.getSecureKey();
     }
