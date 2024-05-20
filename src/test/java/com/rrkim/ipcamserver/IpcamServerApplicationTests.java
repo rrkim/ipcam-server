@@ -1,6 +1,5 @@
 package com.rrkim.ipcamserver;
 
-import com.rrkim.ipcamserver.core.configuration.service.DeviceConfigService;
 import com.rrkim.ipcamserver.core.utility.AesUtility;
 import com.rrkim.ipcamserver.core.utility.FileUtility;
 import com.rrkim.ipcamserver.core.utility.JsonUtility;
@@ -12,13 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @SpringBootTest
