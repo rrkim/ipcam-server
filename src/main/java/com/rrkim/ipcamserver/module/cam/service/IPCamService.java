@@ -60,8 +60,8 @@ public class IPCamService {
 
         try {
             while (true) {
-                String symmetricKey = identificationService.getSymmetricKey();
-                if(symmetricKey == null || symmetricKey.isEmpty()) { break; }
+//                String symmetricKey = identificationService.getSymmetricKey();
+//                if(symmetricKey == null || symmetricKey.isEmpty()) { break; }
 
                 Frame frame = grabber.grab();
                 BufferedImage bufferedImage = convertToBufferedImage(frame);
@@ -71,9 +71,10 @@ public class IPCamService {
                 if(byteArrayOutputStream.size() == 0) { continue; }
                 byte[] bytes = byteArrayOutputStream.toByteArray();
 
-                String encryptedBytes = AesUtility.encodeAesCbc(bytes, symmetricKey);
+//                String encryptedBytes = AesUtility.encodeAesCbc(bytes, symmetricKey);
 
-                bufferedOutputStream.write(encryptedBytes.getBytes());
+//                bufferedOutputStream.write(encryptedBytes.getBytes());
+                bufferedOutputStream.write(bytes);
                 bufferedOutputStream.write("\0".getBytes());
                 bufferedOutputStream.flush();
             }
