@@ -71,10 +71,12 @@ public class IPCamService {
                 if(byteArrayOutputStream.size() == 0) { continue; }
                 byte[] bytes = byteArrayOutputStream.toByteArray();
 
+
+
 //                String encryptedBytes = AesUtility.encodeAesCbc(bytes, symmetricKey);
 
 //                bufferedOutputStream.write(encryptedBytes.getBytes());
-                bufferedOutputStream.write(bytes);
+                bufferedOutputStream.write(Base64.getEncoder().encode(bytes));
                 bufferedOutputStream.write("\0".getBytes());
                 bufferedOutputStream.flush();
             }
